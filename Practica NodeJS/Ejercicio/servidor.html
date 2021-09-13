@@ -1,0 +1,276 @@
+<!-- Servidor.html -->
+
+<!DOCTYPE html>
+<html>
+
+  <head>
+      <meta charset="utf-8" />
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="X-UA-Compatible" content="ie=edge">
+      <title> DSD: Servicio Domótico </title>
+      <link rel="stylesheet" types="text/css" href="estilo.css">
+  </head>
+
+  <body>
+    <!-- MAIN DIV -->
+    <div class="main">
+
+      <!-- Aire Acondicionado -->
+      <div class="temperatura">
+        <form class="formulario" id="aire">
+          <h2> Temperatura </h2>
+          <div class="elemento centrado">
+            <label for="valor">Actual: </label>
+            <input name="valor" type="number" value="25" min="0" max="50"/>
+          </div>
+          <div class="elemento centrado">
+            <label for="min">Mínimo: </label>
+            <input name="min" type="number" value="15" min="0" max="25"/>
+          </div>
+          <div class="elemento centrado">
+            <label for="max">Máximo: </label>
+            <input name="max" type="number" value="35" min="25" max="50"/>
+          </div>
+          
+          
+            <input class="centrado" type="submit" name="submit" value="Actualizar valores"
+              onclick="enviar('aire');return false;"/>
+           <div class="switch_">
+          <div class="main" style="grid-gap: 50%;">
+            <label class="switch centrado">
+              <h3> Aire Acondicionado </h3>
+              <input type="checkbox" id="slider_1" onclick="encender('slider_1');">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="main" style="grid-gap: 50%;">
+            <label class="switch centrado">
+               <h3> Calefación </h3>
+              <input type="checkbox" id="slider_3" onclick="encender('slider_3');">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Persianas -->
+      <div class="luminosidad">
+        <form class="formulario" id="persianas">
+          <h2> Luminosidad </h2>
+          <div class="elemento centrado">
+            <label for="valor">Actual: </label>
+            <input name="valor" type="number" value="5" min="0" max="10"/>
+          </div>
+          <div class="elemento centrado">
+            <label for="min">Mínimo: </label>
+            <input name="min" type="number" value="3" min="0" max="10"/>
+          </div>
+          <div class="elemento centrado">
+            <label for="max">Máximo: </label>
+            <input name="max" type="number" value="7" min="0" max="10"/>
+          </div>
+          
+            <input class="centrado" type="submit" name="submit"
+                value="Actualizar valores" onclick="enviar('persianas');return false;"/>
+            <div class="switch_">
+            <div class="main" style="grid-gap: 50%;">
+            <label class="switch centrado">
+              <h3> Persianas </h3>
+              <input type="checkbox" id="slider_2" onclick="encender('slider_2');">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="main" style="grid-gap: 50%;">
+            <label class="switch centrado">
+               <h3> Luces </h3>
+              <input type="checkbox" id="slider_4" onclick="encender('slider_4');">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          </div>
+        </form>
+      </div>
+
+    </div>
+    <!-- MAIN DIV -->
+   
+    <div class="centrado log-parent actuador">
+    <h1>Servicio Domótico</h1>
+      <h1>EVENTOS</h1>
+      <div id="log"></div>
+    </div>
+    
+
+  </body>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript">
+
+    var serviceURL = document.URL;
+    var socket = io.connect(serviceURL);
+
+    /**
+     * [enviar description]
+     * @param  {[type]} id [description]
+     * @return {[type]}    [description]
+     */
+    function enviar(id) {
+      var formulario = document.getElementById(id);
+      var datos = new Array();
+      // Valor
+      datos.push(formulario[0].value);
+      // Mínimo
+      datos.push(formulario[1].value);
+      // Máximo
+      datos.push(formulario[2].value);
+
+      // Envío de información al Agente
+      (id == "aire") ? sensor = "temperatura" : sensor = "luminosidad";
+      agente (sensor, datos);
+
+      // Envío de información al servidor
+      socket.emit('enviar-datos-'+id, datos);
+      // alert("Datos enviados: enviar-datos-"+ id +" -> "+ datos.toString());
+    }
+
+
+  //Encender con el slicer
+    function encender(slider_id){
+      var slider = document.getElementById(slider_id);
+      var estado;
+
+	//Slider del aire acondicionado esta apagado en un principio
+      if (slider_id=="slider_1") {
+        ((slider.checked) ? estado="Encendido" : estado="Apagado");
+        socket.emit(slider_id, estado);
+        if (estado == "Encendido")
+        socket.emit ("tarifa");
+      }
+      //Slider de las persianas estan abiertas en un principio
+      else if(slider_id=="slider_2"){
+        ((slider.checked) ? estado="Cerrada" : estado="Abierta");
+        socket.emit(slider_id, estado);
+      }
+      //Slider de la calefación esta apagada al principio
+       else if(slider_id=="slider_3"){
+       ((slider.checked) ? estado="Encendida" : estado="Apagada");
+        socket.emit(slider_id, estado);
+        if (estado == "Encendida")
+        	socket.emit ("tarifa");
+      }
+      //Slider de las luces estan apagadas al principio
+      else {
+      	((slider.checked) ? estado="Encendidas" : estado="Apagadas");
+        socket.emit(slider_id, estado);
+        if (estado == "Encendidas")
+        socket.emit ("tarifa");
+      }
+      // alert("Slider: " + estado);
+    }
+
+
+    //Actualiza el registo de eventos y detecta el tipo de mensaje para cambiar el color
+    function actualizarLog (mensaje, importante) {
+      var div = document.getElementById("log");
+      if (importante==true)
+        var evento = "<p style='color: red;'> "+mensaje+" </p>";
+       else if (importante==false)
+        var evento = "<p style='color: green;'> "+mensaje+" </p>"
+      else
+        var evento = "<p> "+mensaje+" </p>"
+      div.innerHTML += evento;
+
+      // Actualizar scroll
+      div.scrollTop = div.scrollHeight;
+    }
+
+    //Se reciben los eventos
+    socket.on ('log', function (mensaje) {
+      actualizarLog (mensaje);
+    });
+
+    socket.on ('aviso', function (mensaje) {
+      actualizarLog (mensaje, true);
+    });
+    
+     socket.on ('tarifa', function (mensaje) {
+      actualizarLog (mensaje, false);
+    });
+
+   //AGENTE
+    function agente (sensor, datos) {
+      var temp = document.getElementById("aire");
+      var luz = document.getElementById("persianas");
+      var umbral_L = false;
+      var umbral_T = false;
+
+	//Si la temperatura supera la maxima se enciende el aire
+      if (+temp[0].value > +temp[2].value){
+      	umbral_T = true;
+        document.getElementById("slider_1").checked = true;
+        encender("slider_1");
+        document.getElementById("slider_3").checked = false;
+        encender("slider_3");
+        
+      }
+      //Si la temperatura es menor que la minima se enciende la calefacion
+     
+      else if (+temp[1].value > +temp[0].value){
+        umbral_T = true;
+        document.getElementById("slider_3").checked = true;
+        encender("slider_3");
+        document.getElementById("slider_1").checked = false;
+        encender("slider_1");
+        
+      }
+      //Si esta dentro del umbral se apaga el aire y la calefacion
+      else if ((+temp[0].value < +temp[2].value ) && (+temp[1].value < +temp[0].value )){
+        document.getElementById("slider_1").checked = false;
+        encender("slider_1");
+        document.getElementById("slider_3").checked = false;
+        encender("slider_3");
+      }
+      else if ( (+datos[0] < +datos[1]) || (+datos[0] > +datos[2]) )
+        socket.emit ("aviso", sensor);
+
+    
+      
+      //LUMINOSIDAD
+       //Si esta dentro del umbral se apagan las luces y las persianas se dejan abiertas
+      if ((+luz[0].value < +luz[2].value ) && (+luz[1].value < +luz[0].value )){
+        document.getElementById("slider_2").checked = false;
+        encender("slider_2");
+        document.getElementById("slider_4").checked = false;
+        encender("slider_4");
+      }
+      //Si la luminosidad supera el umbral maximo se encienden las luces y se cierran las persianas
+      else if (+luz[0].value > +luz[2].value ){
+      	 umbral_L = true;
+        document.getElementById("slider_2").checked = true;
+        encender("slider_2");
+        document.getElementById("slider_4").checked = true;
+        encender("slider_4");
+       
+      }
+      //Si la luminosidad supera el umbral minimo se apagan las luces y se abren las persianas
+      else if (+luz[0].value < +luz[1].value ){
+      	umbral_L = true;
+        document.getElementById("slider_2").checked = false;
+        encender("slider_2");
+        document.getElementById("slider_4").checked = false;
+        encender("slider_4");
+      }
+      
+      if ((umbral_L == true) && (umbral_T == true))
+		socket.emit ("accion");
+     else if (umbral_L == true)
+     		socket.emit ("aviso", "luminosidad");
+     else if (umbral_T == true)
+     		socket.emit ("aviso", sensor);
+    }
+
+  </script>
+
+</html>

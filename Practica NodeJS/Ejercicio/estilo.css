@@ -1,0 +1,160 @@
+
+body {
+  background-color: aliceblue;
+  margin: 5% 5% 0% 5%;
+  display:flex;
+  justify-content: space-evenly;
+}
+
+h1 {
+  color:blue;
+}
+
+h2 {
+  text-align: center;
+  font-variant: small-caps;
+  color: white;
+}
+
+/* Ambas cajas */
+.main {
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 10%;
+  height: 200%;
+}
+
+/* Valor, maximo y minimo */
+.elemento {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 15px;
+}
+
+/* Caja temperatura */
+.temperatura {
+  border-style: groove;
+  background: linear-gradient(blue, red);  
+  border-radius: 10%;
+  border-color: black;
+  margin-bottom: 45px;
+  
+}
+
+/* Caja luminosidad */
+.luminosidad {
+  border-style: groove;
+  background: linear-gradient(black, lightyellow);  
+  border-radius: 10%;
+  border-color: black;
+ 
+}
+
+/* Formularios de ambas cajas */
+.formulario {
+  display: justify;
+  margin-left: 15px;
+}
+
+.centrado {
+  height: 50%;
+  width: 50%;
+  place-self: center;
+  margin-right: 35px;
+}
+
+.switch {
+
+  position: relative;
+  display: inline-block;
+  margin-right: 35px;
+  width: 60px;
+  height: 34px;
+  margin-bottom:20px;
+}
+
+.switch_{
+  display:absolute;
+  margin-top: 30px;
+  
+}
+
+
+.switch_ h3{
+  margin-left: 70px;
+  margin-top: 0px;
+}
+
+
+.switch input {display:none;}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: purple;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px purple;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+   
+}
+
+
+
+.log-parent {
+  margin-top: 40px;
+  border-top-style: solid;
+  width: 100%;
+  text-align: center;
+  width: 200%;
+  margin-left: 90px;
+  
+}
+
+#log {
+  overflow-y: scroll;
+  height: 450px;
+  background-color: darkgrey;
+  line-height: 25px;
+  font-size: 18px;
+  border-bottom-left-radius: 10%;
+  border-bottom-right-radius: 10%;
+  border-top-right-radius: 2%;
+  border-top-left-radius: 2%;
+}
